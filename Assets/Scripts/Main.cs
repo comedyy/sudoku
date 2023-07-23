@@ -27,8 +27,6 @@ public class Main : MonoBehaviour
     GroupMgr groupMgr = new GroupMgr();
     InputField[,] listInputFiled = new InputField[9, 9];
 
-    public bool x1;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -37,7 +35,7 @@ public class Main : MonoBehaviour
 
     void OnValueChange(int i, int j, int m)
     {
-        possibles[i][j].SetValue((m));
+        possibles[i][j].SetValue((m), true);
     }
 
     private void Restart()
@@ -50,7 +48,6 @@ public class Main : MonoBehaviour
             {
                 var obj = child.GetChild(j);
                 var inputFiled = obj.GetComponent<InputField>();
-                inputFiled = obj.GetComponent<InputField>();
 
                 var x1 = i % 3 * 3;
                 var y1 = i / 3 * 3;
@@ -70,19 +67,12 @@ public class Main : MonoBehaviour
                 int y = j;
 
                 var inputFiled = listInputFiled[i, j];
-                inputFiled.onValueChanged.AddListener((m)=>{
-                    OnValueChange(x, y, int.Parse(m));
-                });
+                // inputFiled.onValueChanged.AddListener((m)=>{
+                //     OnValueChange(x, y, int.Parse(m));
+                // });
 
                 var monoPossible = inputFiled.gameObject.AddComponent<SlotPossibleValues>();
-                monoPossible.Init(x, y, (m) =>
-                {
-                    if (m != inputFiled.text)
-                    {
-                        inputFiled.text = m;
-                        inputFiled.textComponent.color = Color.green;
-                    }
-                });
+                monoPossible.Init(x, y);
                 possibles[i][j] = monoPossible;
 
                 if (inputFiled.text != "")
@@ -99,16 +89,19 @@ public class Main : MonoBehaviour
         {
             OnValueChange(x.Item1, x.Item2, x.Item3);
         }
-    }
 
-    void Update(){
-        if(x1)
+        // show Values
+        foreach(var x in listInputFiled)
         {
-            x1 = false;
-            foreach(var x in groupMgr.groupBlock[0].possibleValues)
+            var value = x.GetComponent<SlotPossibleValues>();
+            if(!value.isInput && value.currentValue != -1)
             {
-                Debug.LogError(string.Join(",", x.values));
+                x.textComponent.color = Color.green;
+                x.text = value.currentValue.ToString();
             }
         }
+
+        // if not success guess
+
     }
 }

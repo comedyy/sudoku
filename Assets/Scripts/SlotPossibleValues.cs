@@ -14,6 +14,7 @@ public class SlotPossibleValues : MonoBehaviour
     }
 
     public int currentValue;
+    public bool isInput;
 
     public List<int> values = new List<int>(){
         1, 2, 3, 4, 5, 6, 7, 8, 9
@@ -21,9 +22,7 @@ public class SlotPossibleValues : MonoBehaviour
 
     public List<Group> groups = new List<Group>();
 
-    public System.Action<string> ShowItem { get; internal set; }
-
-    public void SetValue(int value)
+    public void SetValue(int value, bool isInput = false)
     {
         if(currentValue != -1)
         {
@@ -39,7 +38,8 @@ public class SlotPossibleValues : MonoBehaviour
         values.Add(value);
 
         currentValue = value;
-        ShowItem(value.ToString());
+        this.isInput = isInput;
+        // ShowItem(value.ToString());
 
         foreach(var x in groups)
         {
@@ -57,11 +57,10 @@ public class SlotPossibleValues : MonoBehaviour
         }
     }
 
-    internal void Init(int x, int y, Action<string> value)
+    internal void Init(int x, int y)
     {
         this.x1 = x;
         this.y1 = y;
-        this.ShowItem = value;
         this.currentValue = -1;
 
         values = new List<int>(){
