@@ -18,6 +18,8 @@ public class Group : MonoBehaviour
     public GroupType groupType;
     private int index;
 
+    public bool IsWin => remains.Count == 0;
+
     public override string ToString()
     {
         return $"{groupType} {index}";

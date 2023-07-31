@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -35,6 +36,14 @@ public class GroupMgr
 
     internal void Init(SlotList[] possibles)
     {
+        for(int i = 0; i < possibles.Length; i++)
+        {
+            for(int j = 0; j < possibles[i]._list.Length; j++)
+            {
+                possibles[i][j].Init(i, j);
+            }
+        }
+
         parents[0] = new GameObject("horizon");
         parents[1] = new GameObject("vertual");
         parents[2] = new GameObject("block");
@@ -87,5 +96,10 @@ public class GroupMgr
         {
             Assert.AreEqual(x.possibleValues.Count, 9);
         }
+    }
+
+    internal bool IsWin()
+    {
+        return groupHorizon.All(m=>m.IsWin) && groupVertual.All(m=>m.IsWin) && groupBlock.All(m=>m.IsWin);
     }
 }

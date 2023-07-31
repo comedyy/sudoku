@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [Serializable]
@@ -23,6 +25,8 @@ public struct SlotList
 public class Main : MonoBehaviour
 {
     public Button _reStart;
+    public Button _level132;
+    public Button _level131;
     public SlotList[] possibles = new SlotList[9];
     GroupMgr groupMgr = new GroupMgr();
     InputField[,] listInputFiled = new InputField[9, 9];
@@ -31,11 +35,18 @@ public class Main : MonoBehaviour
     void Start()
     {
         _reStart.onClick.AddListener(Restart);
+        _level132.onClick.AddListener(OnClick132);
+        _level131.onClick.AddListener(OnClick131);
     }
 
-    void OnValueChange(int i, int j, int m)
+    private void OnClick131()
     {
-        possibles[i][j].SetValue((m), true);
+        SceneManager.LoadSceneAsync("Scenes/131");
+    }
+
+    private void OnClick132()
+    {
+        SceneManager.LoadSceneAsync("Scenes/132");
     }
 
     private void Restart()
@@ -63,45 +74,103 @@ public class Main : MonoBehaviour
             possibles[i]._list = new SlotPossibleValues[9];
             for(int j = 0; j < 9; j++)
             {
-                int x = i;
-                int y = j;
-
                 var inputFiled = listInputFiled[i, j];
-                // inputFiled.onValueChanged.AddListener((m)=>{
-                //     OnValueChange(x, y, int.Parse(m));
-                // });
-
                 var monoPossible = inputFiled.gameObject.AddComponent<SlotPossibleValues>();
-                monoPossible.Init(x, y);
                 possibles[i][j] = monoPossible;
 
                 if (inputFiled.text != "")
                 {
-                    var value = int.Parse(inputFiled.text);
                     inputParams.Add((i, j, int.Parse(inputFiled.text)));
                 }
             }
         }
 
         groupMgr.Init(possibles);
-
         foreach(var x in inputParams)
         {
-            OnValueChange(x.Item1, x.Item2, x.Item3);
+            possibles[x.Item1][x.Item2].SetValue(x.Item3, true);
+        }
+
+        if(!groupMgr.IsWin())
+        {
+            SlotPossibleValues item = GetMinPossibleNode();
+
+            for(int i = 0; i < item.values.Count; i++)
+            {
+                List<(int, int, int)> inputParams1 = new List<(int, int, int)>(inputParams)
+                {
+                    (item.x1, item.y1, item.values[i])
+                };
+                
+                if(GetResult(inputParams1))
+                {
+                    break;
+                }
+            }
         }
 
         // show Values
         foreach(var x in listInputFiled)
         {
             var value = x.GetComponent<SlotPossibleValues>();
-            if(!value.isInput && value.currentValue != -1)
+            if(value.currentValue != -1 && !inputParams.Exists(m=>m.Item1 == value.x1 && m.Item2 == value.y1))
             {
                 x.textComponent.color = Color.green;
                 x.text = value.currentValue.ToString();
             }
         }
+    }
 
-        // if not success guess
+    private SlotPossibleValues GetMinPossibleNode()
+    {
+        int minCount = 10;
+        SlotPossibleValues minValue = null;
+        for(int i = 0; i < 9; i++)
+        {
+            for(int j = 0; j < 9; j++)
+            {
+                var item = possibles[i][j];
+                var count = item.values.Count;
+                if(minCount > count && count > 1){
+                    minCount = count;
+                    minValue = possibles[i][j];
+                }
+            }
+        }
 
+        return minValue;
+    }
+
+    private bool GetResult(List<(int, int, int)> inputParams)
+    {
+        groupMgr.Init(possibles);
+        foreach(var x in inputParams)
+        {
+            possibles[x.Item1][x.Item2].SetValue(x.Item3, true);
+        }
+
+        if(groupMgr.IsWin())
+        {
+            return true;
+        }
+        else
+        {
+            SlotPossibleValues item = GetMinPossibleNode();
+
+            for(int i = 0; i < item.values.Count; i++)
+            {
+                List<(int, int, int)> inputParams1 = new List<(int, int, int)>(inputParams)
+                {
+                    (item.x1, item.y1, item.values[i])
+                };
+                
+                if(GetResult(inputParams1))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
